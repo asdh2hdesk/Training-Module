@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Update existing eLearning menu to Training -->
+        <record id="website_slides.website_slides_menu_root" model="ir.ui.menu">
+            <field name="name">Training</field>
+        </record>
+    </data>
+</odoo>

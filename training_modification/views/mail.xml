@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_mailing_form_inherit_attendees" model="ir.ui.view">
+            <field name="name">mailing.mailing.form.attendees</field>
+            <field name="model">mailing.mailing</field>
+            <field name="inherit_id" ref="mass_mailing.view_mail_mass_mailing_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="before">
+                    <group>
+<!--                        <field name="course_id" readonly="1"/>-->
+                        <field name="attendees_ids" widget="many2many_tags"
+                               string="Attendees"
+                               options="{'no_create': True, 'no_create_edit': True}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

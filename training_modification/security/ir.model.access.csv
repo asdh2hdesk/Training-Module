@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_slide_attendance_user,slide.attendance.user,model_slide_attendance,base.group_user,1,1,1,1
+access_slide_attendance_public,slide.attendance.public,model_slide_attendance,base.group_public,1,0,0,0
+access_elearning_dashboard_service_user,elearning.dashboard.service.user,model_elearning_dashboard_service,base.group_user,1,0,0,0
+access_elearning_dashboard_service_manager,elearning.dashboard.service.manager,model_elearning_dashboard_service,website_slides.group_website_slides_manager,1,0,0,0
+access_elearning_dashboard_service_officer,elearning.dashboard.service.officer,model_elearning_dashboard_service,website_slides.group_website_slides_officer,1,0,0,0

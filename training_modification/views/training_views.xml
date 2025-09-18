@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="slide_channel_form_inherit" model="ir.ui.view">
+        <field name="name">slide.channel.form.inherit</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[last()]" position="after">
+                <page string="Attendance">
+                    <field name="attendance_ids" context="{'default_channel_id': id}">
+                        <list editable="bottom">
+                            <field name="partner_name" string="Employee Name"/>
+                            <field name="date" width="150px"/>
+                            <field name="present"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="slide_attendance_form" model="ir.ui.view">
+        <field name="name">slide.attendance.form</field>
+        <field name="model">slide.attendance</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"
+                               domain="[('channel_id', '=', channel_id)]"
+                               options="{'no_create': True, 'no_create_edit': True}"
+                               string="Employee"/>
+                        <field name="channel_id" invisible="1"/>
+                        <field name="date"/>
+                        <field name="present"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,528 @@
+.o_action_manager{
+    overflow-y: auto !important;
+}
+.o_elearning_dashboard {
+    padding: 24px;
+    background: url('/construction_management/static/src/img/dashboard_bg.png') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    overflow-y: auto;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Animated background particles effect */
+.o_elearning_dashboard::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(20, 184, 166, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(15, 118, 110, 0.2) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+    33% { transform: translate(30px, -30px) rotate(120deg); }
+    66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+.o_elearning_dashboard > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header Styles */
+.o_elearning_header {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 32px 48px;
+    margin-bottom: 32px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.dashboard-title {
+    color: black;
+    font-size: 32px;
+    font-weight: 800;
+    text-align: left !important;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 8px;
+}
+
+.dashboard-time {
+    color: black;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 32px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dashboard-time:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+/* KPI Styles */
+.o_elearning_kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.kpi.kpi1, .kpi.kpi2, .kpi.kpi3, .kpi.kpi4,
+.kpi.kpi5, .kpi.kpi6, .kpi.kpi7, .kpi.kpi8 {
+    background: rgba(255, 255, 255, 0.08) !important;
+    min-height: 120px;
+    min-width: 90px;
+}
+
+.kpi {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    transition: height 0.3s ease;
+    background: transparent; /* Remove gradient for transparency */
+}
+
+.kpi::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.6s ease;
+}
+
+.kpi:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 20px 48px rgba(0, 0, 0, 0.15),
+        0 8px 24px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.kpi:hover::before {
+    height: 6px;
+}
+
+.kpi:hover::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Color schemes for different KPIs */
+.kpi1::before { background: linear-gradient(90deg, #3498db, #5dade2); }
+.kpi2::before { background: linear-gradient(90deg, #2ecc71, #58d68d); }
+.kpi3::before { background: linear-gradient(90deg, #17a2b8, #45b8d1); }
+.kpi4::before { background: linear-gradient(90deg, #f39c12, #f7dc6f); }
+.kpi5::before { background: linear-gradient(90deg, #27ae60, #58d68d); }
+.kpi6::before { background: linear-gradient(90deg, #9b59b6, #bb8fce); }
+.kpi7::before { background: linear-gradient(90deg, #f1c40f, #f4d03f); }
+.kpi8::before { background: linear-gradient(90deg, #16a085, #48c9b0); }
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.kpi:hover .kpi-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+.kpi1 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi2 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi3 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi4 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi5 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi6 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi7 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+.kpi8 .kpi-icon { background: linear-gradient(135deg, #2ecc71, #58d68d); }
+
+.kpi-content {
+    flex: 1;
+    text-align: left;
+}
+
+.kpi-label {
+    font-size: 14px;
+    color: black;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    line-height: 1.2;
+}
+
+.kpi-value {
+    font-size: 24px !important;
+    font-weight: 900;
+    color: black;
+    line-height: 1;
+    font-family: 'Inter', system-ui, sans-serif;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    margin-bottom: 4px;
+}
+
+/* Enhanced Main Content Area */
+.o_elearning_main_content {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 36px;
+    margin-bottom: 32px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    position: relative;
+}
+
+/* Enhanced Chart Containers */
+.chart-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.chart-container {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    height: 380px;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.chart-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+}
+
+.chart-container.full-width {
+    grid-column: 1 / -1;
+    height: 420px;
+}
+
+.chart-container:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 16px 64px rgba(0, 0, 0, 0.12),
+        0 4px 16px rgba(0, 0, 0, 0.06);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.chart-container canvas {
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+/* Enhanced Summary Section */
+.o_elearning_summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.summary-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.summary-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow:
+        0 20px 64px rgba(0, 0, 0, 0.15),
+        0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card h4 {
+    color: black;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.summary-card {
+    padding: 24px;
+    border-radius: 20px;
+}
+
+.summary-metrics {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.metric {
+    text-align: center;
+    color: black;
+}
+.metric strong {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.metric small {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .chart-group {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .chart-container {
+        height: 320px;
+    }
+
+    .chart-container.full-width {
+        height: 360px;
+    }
+}
+
+@media (max-width: 768px) {
+    .o_elearning_dashboard {
+        padding: 16px;
+    }
+
+    .o_elearning_header {
+        padding: 24px 32px;
+        flex-direction: column;
+        text-align: left;
+        border-radius: 20px;
+    }
+
+    .dashboard-title {
+        font-size: 28px;
+        margin-bottom: 16px;
+        text-align: left !important;
+    }
+
+    .dashboard-time {
+        float: right !important;
+        padding: 10px 16px;
+        position: absolute;
+    }
+
+    .o_elearning_kpis {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+    }
+
+    .kpi {
+        padding: 16px 20px;
+        border-radius: 14px;
+    }
+
+    .kpi-value {
+        font-size: 24px !important;
+    }
+
+    .o_elearning_main_content {
+        padding: 24px;
+        border-radius: 24px;
+    }
+
+    .chart-container {
+        height: 280px;
+        padding: 24px;
+        border-radius: 20px;
+    }
+
+    .chart-container.full-width {
+        height: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .o_elearning_kpis {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .kpi {
+        padding: 16px 20px;
+        min-height: 0px;
+    }
+
+    .kpi-icon {
+        width: 48px;          /* smaller icon */
+        height: 48px;
+        font-size: 22px;
+        margin-right: 10px;
+    }
+
+    .kpi-value {
+        font-size: 24px !important;
+    }
+
+    .kpi-label {
+        font-size: 14px;
+    }
+
+    .chart-container {
+        height: 240px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px 20px;
+        min-height: 180px;
+    }
+
+    .kpi-icon {
+        margin-right: 0;
+        margin-bottom: 12px;
+    }
+
+    .kpi-content {
+        text-align: center;
+    }
+
+    .kpi-value {
+        font-size: 24px !important;
+    }
+}
+
+/* Enhanced Animation Classes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.o_elearning_dashboard > * {
+    animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.o_elearning_header {
+    animation: slideInLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.1s;
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Update existing eLearning menu to Training -->
+        <record id="website_slides.website_slides_menu_root" model="ir.ui.menu">
+            <field name="name">Training</field>
+<!--            <field name="action" ref="action_elearning_dashboard_client"/>-->
+        </record>
+
+        <!-- Client Action for OWL Dashboard -->
+        <record id="action_elearning_dashboard_client" model="ir.actions.client">
+            <field name="name">Training Dashboard</field>
+            <field name="tag">elearning_dashboard.client_action</field>
+            <field name="target">main</field>
+        </record>
+
+        <!-- Menu to show the dashboard -->
+        <menuitem id="menu_elearning_dashboard_client"
+                  name="Training Dashboard"
+                  parent="website_slides.website_slides_menu_root"
+                  action="action_elearning_dashboard_client"
+                  sequence="0"/>
+    </data>
+</odoo>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="elearning.ELearningDashboard">
+        <div class="o_elearning_dashboard">
+
+            <!-- Header with Title + Live Clock -->
+            <div class="o_elearning_header d-flex justify-content-center align-items-center">
+                <h2 class="dashboard-title">Training Dashboard</h2>
+                <div class="dashboard-time" t-attf-id="elearning_dashboard_time"></div>
+            </div>
+
+            <t t-if="state.loading">
+                <div class="o_loader">Loading training metrics...</div>
+            </t>
+            <t t-else="">
+                <div class="o_elearning_kpis">
+                    <div class="kpi kpi1" t-on-click="() => this.openModel('slide.channel')">
+                        <div class="kpi-icon"><i class="fa fa-book"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Total Courses</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.totalCourses"/></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi kpi2" t-on-click="() => this.openModel('slide.channel.partner')">
+                        <div class="kpi-icon"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Enrolled Employees</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.totalStudents"/></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi kpi3" t-on-click="() => this.openModel('slide.channel', [('is_published', '=', True)])">
+                        <div class="kpi-icon"><i class="fa fa-chart-line"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Active Courses</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.activeCourses"/></div>
+                        </div>
+                    </div>
+
+                    <div class="kpi kpi6" t-on-click="() => this.openModel('survey.survey')">
+                        <div class="kpi-icon"><i class="fa fa-trophy"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Certificates</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.totalCertificates"/></div>
+                        </div>
+                    </div>
+                    <div class="kpi kpi7">
+                        <div class="kpi-icon"><i class="fas fa-question-circle"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Quizzes</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.quizzes"/></div>
+                        </div>
+                    </div>
+                    <div class="kpi kpi8">
+                        <div class="kpi-icon"><i class="fa fa-tasks"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Contents</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.totalContent"/></div>
+<!--                            <div class="kpi-value"><t t-esc="state.kpis.courseRating || 0"/></div>-->
+                        </div>
+                    </div>
+                    <div class="kpi kpi4">
+                        <div class="kpi-icon"><i class="fa fa-clock"></i></div>
+                        <div class="kpi-content">
+                            <div class="kpi-label">Attendance Percentage</div>
+                            <div class="kpi-value"><t t-esc="state.kpis.attendanceRecords"/></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area - Charts Section -->
+                <div class="o_elearning_main_content">
+
+                    <!-- Top Row - Two Charts -->
+                    <div class="chart-group">
+                        <div class="chart-container">
+                            <canvas id="CourseProgressChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="progressPieChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Middle Row - Two Charts -->
+                    <div class="chart-group">
+                        <div class="chart-container">
+                            <canvas id="enrollmentsChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="attendanceChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row - Single Chart -->
+                    <div class="chart-container full-width">
+                        <canvas id="completionRatesChart" width="400" height="300"></canvas>
+                    </div>
+
+                </div>
+
+                <!-- Summary Stats at Bottom -->
+                <div class="o_elearning_summary">
+                    <div class="summary-card">
+                        <h4>This Month</h4>
+                        <div class="summary-metrics">
+                            <span class="metric">
+                                <strong t-esc="state.kpis.totalCourses"/>
+                                <small>Total Courses</small>
+                            </span>
+                            <span class="metric">
+                                <strong t-esc="state.kpis.activeCourses"/>
+                                <small>Published Courses</small>
+                            </span>
+                            <span class="metric">
+                                <strong t-esc="state.kpis.pendingCourses"/>
+                                <small>Unpublished Courses</small>
+                            </span>
+                            <span class="metric">
+                                <strong t-esc="state.kpis.employeesEnrolledThisMonth"/>
+                                <small>Enrolled</small>
+                            </span>
+                            <span class="metric">
+                                <strong t-esc="state.kpis.courseRating || 0"/>
+                                <small>Avg Rating</small>
+                            </span>
+                        </div>
+                    </div>
+<!--                    <div class="summary-card">-->
+<!--                        <h4>Learning Performance</h4>-->
+<!--                        <div class="summary-metrics">-->
+<!--                            <span class="metric">-->
+<!--                                <strong t-esc="state.kpis.completedCourses"/>-->
+<!--                                <small>Completed Enrollments</small>-->
+<!--                            </span>-->
+<!--                            <span class="metric">-->
+<!--                                <strong>85.2%</strong>-->
+<!--                                <small>Average Completion Rate</small>-->
+<!--                            </span>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="summary-card">-->
+<!--                        <h4>Content &amp; Engagement</h4>-->
+<!--                        <div class="summary-metrics">-->
+<!--                            <span class="metric">-->
+<!--                                <strong t-esc="state.kpis.courseRating || 0"/>-->
+<!--                                <small>Avg Rating</small>-->
+<!--                            </span>-->
+<!--                            <span class="metric">-->
+<!--                                <strong t-esc="state.kpis.employeesEnrolledThisMonth"/>-->
+<!--                                <small>Enrolled</small>-->
+<!--                            </span>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="summary-card">-->
+<!--                        <h4>Communications</h4>-->
+<!--                        <div class="summary-metrics">-->
+<!--                            <span class="metric">-->
+<!--                                <strong t-esc="state.kpis.mailingCampaigns"/>-->
+<!--                                <small>Email Campaigns</small>-->
+<!--                            </span>-->
+<!--                            <span class="metric">-->
+<!--                                <strong>92.8%</strong>-->
+<!--                                <small>Email Delivery Rate</small>-->
+<!--                            </span>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
