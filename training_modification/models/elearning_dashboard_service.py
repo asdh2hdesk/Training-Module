@@ -54,21 +54,34 @@ class ELearningDashboardService(models.AbstractModel):
         }
 
     def _get_attendance_percentage(self):
-        """Get average attendance percentage of active courses with % sign"""
+        """Get average attendance percentage across all active courses"""
         active_courses = self.env["slide.channel"].search([("is_published", "=", True)])
         if not active_courses:
             return "0%"
 
-        total_students = sum(len(course.channel_partner_ids) for course in active_courses)
-        total_attendance = self.env["slide.attendance"].search_count([
-            ("channel_id", "in", active_courses.ids)
-        ])
+        course_percentages = []
 
-        if total_students == 0:
+        for course in active_courses:
+            enrolled_students = len(course.channel_partner_ids)
+            if enrolled_students == 0:
+                continue
+
+            # Get attendance records for this course
+            course_attendance = self.env["slide.attendance"].search([
+                ("channel_id", "=", course.id)
+            ])
+
+            # Count unique students who attended this course
+            attended_students = len(set(course_attendance.mapped('name.id')))
+
+            course_percentage = (attended_students / enrolled_students) * 100
+            course_percentages.append(course_percentage)
+
+        if not course_percentages:
             return "0%"
 
-        attendance_percentage = (total_attendance / total_students) * 100
-        return f"{round(attendance_percentage, 2)}%"
+        average_percentage = sum(course_percentages) / len(course_percentages)
+        return f"{round(average_percentage, 2)}%"
 
     def _get_employees_enrolled_this_month(self):
         try:
