@@ -45,13 +45,13 @@
                             <div class="kpi-value"><t t-esc="state.kpis.totalCertificates"/></div>
                         </div>
                     </div>
-                    <div class="kpi kpi7">
-                        <div class="kpi-icon"><i class="fas fa-question-circle"></i></div>
-                        <div class="kpi-content">
-                            <div class="kpi-label">Quizzes</div>
-                            <div class="kpi-value"><t t-esc="state.kpis.quizzes"/></div>
-                        </div>
-                    </div>
+<!--                    <div class="kpi kpi7">-->
+<!--                        <div class="kpi-icon"><i class="fas fa-question-circle"></i></div>-->
+<!--                        <div class="kpi-content">-->
+<!--                            <div class="kpi-label">Quizzes</div>-->
+<!--                            <div class="kpi-value"><t t-esc="state.kpis.quizzes"/></div>-->
+<!--                        </div>-->
+<!--                    </div>-->
                     <div class="kpi kpi8">
                         <div class="kpi-icon"><i class="fa fa-tasks"></i></div>
                         <div class="kpi-content">

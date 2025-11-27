@@ -4,3 +4,15 @@ access_slide_attendance_public,slide.attendance.public,model_slide_attendance,ba
 access_elearning_dashboard_service_user,elearning.dashboard.service.user,model_elearning_dashboard_service,base.group_user,1,0,0,0
 access_elearning_dashboard_service_manager,elearning.dashboard.service.manager,model_elearning_dashboard_service,website_slides.group_website_slides_manager,1,0,0,0
 access_elearning_dashboard_service_officer,elearning.dashboard.service.officer,model_elearning_dashboard_service,website_slides.group_website_slides_officer,1,0,0,0
+access_attendance_proof_public,attendance.proof.public,model_attendance_proof,base.group_public,1,0,0,0
+access_attendance_proof_portal,attendance.proof.portal,model_attendance_proof,base.group_portal,1,1,1,0
+access_attendance_proof_user,attendance.proof.user,model_attendance_proof,base.group_user,1,1,1,1
+access_attendance_proof_manager,attendance.proof.manager,model_attendance_proof,website_slides.group_website_slides_manager,1,1,1,1
+access_slide_attendance_public,slide.attendance.public,model_slide_attendance,base.group_public,1,0,0,0
+access_slide_attendance_portal,slide.attendance.portal,model_slide_attendance,base.group_portal,1,1,1,0
+access_slide_attendance_manager,slide.attendance.manager,model_slide_attendance,website_slides.group_website_slides_manager,1,1,1,1
+access_training_calendar_user,training.calendar.user,model_training_calendar,base.group_user,1,0,0,0
+access_training_calendar_manager,training.calendar.manager,model_training_calendar,website_slides.group_website_slides_manager,1,1,1,1
+access_training_calendar_officer,training.calendar.officer,model_training_calendar,website_slides.group_website_slides_officer,1,1,1,1
+access_training_calendar_public,training.calendar.public,model_training_calendar,base.group_public,1,0,0,0
+access_training_calendar_portal,training.calendar.portal,model_training_calendar,base.group_portal,1,0,0,0

@@ -8,11 +8,37 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook" position="before">
                     <group>
-<!--                        <field name="course_id" readonly="1"/>-->
-                        <field name="attendees_ids" widget="many2many_tags"
-                               string="Attendees"
-                               options="{'no_create': True, 'no_create_edit': True}"/>
+                        <group>
+                            <field name="course_id" readonly="1"/>
+                        </group>
+
+
+                        <group>
+                            <field name="training_duration" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="training_start_time"/>
+                            <field name="training_end_time"/>
+                        </group>
+
+                        <group colspan="2">
+                            <field name="attendees_ids" widget="many2many_tags"
+                                   string="Attendees"
+                                   options="{'no_create': True, 'no_create_edit': True}"/>
+                        </group>
                     </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Optional: Add duration field to slide.channel form view -->
+        <record id="view_slide_channel_form_duration" model="ir.ui.view">
+            <field name="name">slide.channel.form.duration</field>
+            <field name="model">slide.channel</field>
+            <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='enroll']" position="after">
+                    <field name="duration" widget="float_time"/>
                 </xpath>
             </field>
         </record>

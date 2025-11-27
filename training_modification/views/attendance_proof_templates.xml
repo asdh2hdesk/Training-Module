@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add Upload Proof button at the bottom of the page -->
+    <template id="slide_channel_upload_proof_button"
+          inherit_id="website_slides.course_main"
+          name="Add Upload Proof Button on Course Page">
+
+        <!-- Place the button right after the course slides list -->
+        <xpath expr="//t[@t-call='website_slides.course_slides_list']" position="after">
+            <t t-if="channel.is_member">
+                <div class="mt-3 mb-4">
+                    <a t-attf-href="/slides/course/#{channel.id}/upload-proof"
+                       class="btn btn-primary">
+                        <i class="fa fa-upload"/> Upload Proof of Attendance
+                    </a>
+                    <a t-attf-href="/slides/course/#{channel.id}/calendar"
+                       class="btn btn-primary">
+                        <i class="fa fa-calendar"/>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+
+    </template>
+
+
+    <template id="attendance_proof_upload_page" name="Upload Attendance Proof">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container mt-5 mb-5">
+                    <div class="row">
+                        <div class="col-lg-10 offset-lg-1">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h3 class="mb-0">
+                                        <i class="fa fa-upload me-2"/> Upload Proof of Attendance
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="text-muted mb-4" t-field="channel.name"/>
+
+                                    <!-- Success Message -->
+                                    <t t-if="success_message">
+                                        <div class="alert alert-success alert-dismissible fade show">
+                                            <i class="fa fa-check-circle me-2"/>
+                                            Proof uploaded successfully!
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                                        </div>
+                                    </t>
+
+                                    <!-- Upload Form -->
+                                    <form method="post"
+                                          t-attf-action="/slides/course/#{channel.id}/submit-proof"
+                                          enctype="multipart/form-data"
+                                          class="mt-4 mb-4">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                        <div class="mb-4">
+                                            <label for="proof_file" class="form-label">
+                                                <strong>Upload Images/Screenshots *</strong>
+                                            </label>
+                                            <input type="file"
+                                                   class="form-control form-control-lg"
+                                                   id="proof_file"
+                                                   name="proof_file"
+                                                   accept="image/*"
+                                                   multiple="multiple"
+                                                   required="required"/>
+<!--                                            <small class="form-text text-muted">-->
+<!--                                                You can select multiple files. Accepted formats: JPG, PNG, GIF (Max 5MB each)-->
+<!--                                            </small>-->
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="notes" class="form-label">Notes (Optional)</label>
+                                            <textarea class="form-control"
+                                                      id="notes"
+                                                      name="notes"
+                                                      rows="3"
+                                                      placeholder="Add any additional notes about your attendance..."></textarea>
+                                        </div>
+
+                                        <div class="d-grid gap-2 d-md-block">
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="fa fa-check me-2"/> Upload Proof
+                                            </button>
+                                            <a t-attf-href="/slides/#{channel.id}" class="btn btn-secondary btn-sm ms-md-2">
+                                                <i class="fa fa-arrow-left me-2"/> Back to Course
+                                            </a>
+                                        </div>
+                                    </form>
+
+                                    <!-- Uploaded Proofs Table -->
+                                    <t t-if="existing_proofs">
+                                        <hr class="my-4"/>
+                                        <h4 class="mb-3">
+                                            <i class="fa fa-list me-2"/> Your Uploaded Proofs
+                                        </h4>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 5%">#</th>
+                                                        <th style="width: 20%">Preview</th>
+                                                        <th style="width: 20%">Filename</th>
+                                                        <th style="width: 20%">Upload Date</th>
+                                                        <th style="width: 15%">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-set="counter" t-value="1"/>
+                                                    <t t-foreach="existing_proofs" t-as="proof">
+                                                        <tr>
+                                                            <td class="text-center">
+                                                                <t t-esc="counter"/>
+                                                                <t t-set="counter" t-value="counter + 1"/>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <t t-if="proof.proof_image">
+                                                                    <img t-attf-src="data:image/png;base64,#{proof.proof_image}"
+                                                                         alt="Proof"
+                                                                         class="img-thumbnail"
+                                                                         style="max-width: 100px; max-height: 100px; cursor: pointer;"
+                                                                         data-bs-toggle="modal"
+                                                                         t-attf-data-bs-target="#imageModal#{proof.id}"/>
+                                                                </t>
+                                                            </td>
+                                                            <td>
+                                                                <t t-esc="proof.proof_filename"/>
+                                                                <t t-if="proof.notes">
+                                                                    <br/>
+                                                                    <small class="text-muted">
+                                                                        <i class="fa fa-comment me-1"/>
+                                                                        <t t-esc="proof.notes[:50]"/>
+                                                                        <t t-if="len(proof.notes) > 50">...</t>
+                                                                    </small>
+                                                                </t>
+                                                            </td>
+                                                            <td>
+                                                                <t t-esc="proof.upload_date.strftime('%Y-%m-%d %H:%M') if proof.upload_date else ''"/>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <a t-attf-href="/slides/course/proof/delete/#{proof.id}?csrf_token=#{request.csrf_token()}"
+                                                                   class="btn btn-sm btn-danger"
+                                                                   onclick="return confirm('Are you sure you want to delete this proof?');">
+                                                                    <i class="fa fa-trash"/> Delete
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+
+                                                        <!-- Image Preview Modal -->
+                                                        <div class="modal fade" t-attf-id="imageModal#{proof.id}" tabindex="-1">
+                                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">
+                                                                            <t t-esc="proof.proof_filename"/>
+                                                                        </h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"/>
+                                                                    </div>
+                                                                    <div class="modal-body text-center">
+                                                                        <img t-attf-src="data:image/png;base64,#{proof.proof_image}"
+                                                                             alt="Proof"
+                                                                             class="img-fluid"/>
+                                                                        <t t-if="proof.notes">
+                                                                            <div class="mt-3 text-start">
+                                                                                <strong>Notes:</strong>
+                                                                                <p t-esc="proof.notes"/>
+                                                                            </div>
+                                                                        </t>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="training_calendar_page" name="Training Calendar">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container mt-5 mb-5">
+                    <div class="row">
+                        <div class="col-lg-10 offset-lg-1">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h3 class="mb-0">
+                                        <i class="fa fa-calendar me-2"/> Training Schedule
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="text-muted mb-4" t-field="channel.name"/>
+
+                                    <!-- Legend for color coding -->
+<!--                                    <div class="alert alert-info mb-4">-->
+<!--                                        <strong>Status Legend:</strong>-->
+<!--                                        <div class="mt-2">-->
+<!--                                            <span class="badge bg-warning text-dark me-3">-->
+<!--                                                <i class="fa fa-calendar-o"/> Scheduled-->
+<!--                                            </span>-->
+<!--                                            <span class="badge bg-success me-3">-->
+<!--                                                <i class="fa fa-check"/> Completed with Proof-->
+<!--                                            </span>-->
+<!--                                            <span class="badge bg-danger">-->
+<!--                                                <i class="fa fa-exclamation-triangle"/> Missing Proof-->
+<!--                                            </span>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+
+                                    <div id="training-calendar" class="mb-4">
+                                        <!-- Month/Year Navigation -->
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <a t-attf-href="/slides/course/#{channel.id}/calendar?month=#{prev_month}&amp;year=#{prev_year}"
+                                               class="btn btn-outline-primary">
+                                                <i class="fa fa-chevron-left"/> Previous
+                                            </a>
+                                            <h4 class="mb-0">
+                                                <t t-esc="month_name"/> <t t-esc="year"/>
+                                            </h4>
+                                            <a t-attf-href="/slides/course/#{channel.id}/calendar?month=#{next_month}&amp;year=#{next_year}"
+                                               class="btn btn-outline-primary">
+                                                Next <i class="fa fa-chevron-right"/>
+                                            </a>
+                                        </div>
+
+                                        <!-- Calendar Grid -->
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered text-center">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Mon</th>
+                                                        <th>Tue</th>
+                                                        <th>Wed</th>
+                                                        <th>Thu</th>
+                                                        <th>Fri</th>
+                                                        <th>Sat</th>
+                                                        <th>Sun</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="calendar_weeks" t-as="week">
+                                                        <tr>
+                                                            <t t-foreach="week" t-as="day">
+                                                                <td t-attf-class="p-3
+                                                                    #{day.get('has_training') and day.get('status_color') == 'warning' and 'bg-warning' or ''}
+                                                                    #{day.get('has_training') and day.get('status_color') == 'success' and 'bg-success text-white' or ''}
+                                                                    #{day.get('has_training') and day.get('status_color') == 'danger' and 'bg-danger text-white' or ''}
+                                                                    #{day.get('is_today') and 'border-primary border-3' or ''}">
+                                                                    <div>
+                                                                        <strong t-esc="day.get('day', '')"/>
+                                                                    </div>
+                                                                    <t t-if="day.get('training')">
+                                                                        <small>
+                                                                            <i class="fa fa-clock-o"/>
+                                                                            <t t-esc="'%02d:%02d' % (int(day['training'].start_time), int((day['training'].start_time % 1) * 60))"/>
+                                                                            <t t-if="day['training'].location">
+                                                                                <br/><i class="fa fa-map-marker"/> <t t-esc="day['training'].location"/>
+                                                                            </t>
+                                                                            <br/>
+<!--                                                                            <t t-if="day.get('proof_exists')">-->
+<!--                                                                                <i class="fa fa-check-circle"/> Proof Uploaded-->
+<!--                                                                            </t>-->
+<!--                                                                            <t t-else="">-->
+<!--                                                                                <t t-if="day.get('status_color') == 'danger'">-->
+<!--                                                                                    <i class="fa fa-exclamation-triangle"/> No Proof-->
+<!--                                                                                </t>-->
+<!--                                                                            </t>-->
+                                                                        </small>
+                                                                    </t>
+                                                                </td>
+                                                            </t>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Training List -->
+                                    <t t-if="upcoming_trainings">
+                                        <h5 class="mt-4 mb-3">Upcoming Training Sessions</h5>
+                                        <div class="list-group">
+                                            <t t-foreach="upcoming_trainings" t-as="training">
+                                                <div class="list-group-item">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1">
+                                                            <i class="fa fa-calendar-check-o text-success"/>
+                                                            <t t-esc="training.training_date.strftime('%B %d, %Y')"/>
+                                                        </h6>
+                                                        <small>
+                                                            <t t-esc="'%02d:%02d' % (int(training.start_time), int((training.start_time % 1) * 60))"/> -
+                                                            <t t-esc="'%02d:%02d' % (int(training.end_time), int((training.end_time % 1) * 60))"/>
+                                                        </small>
+                                                    </div>
+                                                    <p class="mb-1" t-if="training.description" t-esc="training.description"/>
+                                                    <small t-if="training.location">
+                                                        <i class="fa fa-map-marker"/> <t t-esc="training.location"/>
+                                                    </small>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+
+                                    <div class="mt-4">
+                                        <a t-attf-href="/slides/#{channel.id}" class="btn btn-secondary">
+                                            <i class="fa fa-arrow-left me-2"/> Back to Course
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

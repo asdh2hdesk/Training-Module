@@ -1,11 +1,27 @@
 from odoo import models, fields, api
 import logging
+from datetime import timedelta
 _logger = logging.getLogger(__name__)
 
 class SlideChannel(models.Model):
     _inherit = 'slide.channel'
 
     attendance_ids = fields.One2many('slide.attendance', 'channel_id', string='Attendance')
+    duration = fields.Float(string='Duration (Hours)', help='Training duration in hours')
+
+    training_date = fields.Date(string='Training Date')
+    start_time = fields.Float(string='Start Time', help='Start time in hours (e.g., 9.5 for 9:30 AM)')
+    end_time = fields.Float(string='End Time', help='End time in hours (e.g., 17.5 for 5:30 PM)')
+
+    proof_ids = fields.One2many('attendance.proof', 'course_id', string='Attendance Proofs')
+    proof_count = fields.Integer('Proof Count', compute='_compute_proof_count')
+
+    training_calendar_ids = fields.One2many('training.calendar', 'course_id', string='Training Calendar')
+
+    @api.depends('proof_ids')
+    def _compute_proof_count(self):
+        for record in self:
+            record.proof_count = len(record.proof_ids)
 
     def write(self, vals):
         """Override write to update attendance when members change"""
@@ -130,7 +146,7 @@ class SlideAttendance(models.Model):
     partner_name = fields.Char(related='name.partner_id.name', string='Employee Name', readonly=True)
     channel_id = fields.Many2one('slide.channel', string='Course', required=True, ondelete='cascade')
     date = fields.Date('Date', default=fields.Date.today)
-    present = fields.Boolean('Present', default=False)
+    present = fields.Boolean('Attendance', default=False)
 
     _sql_constraints = [
         ('unique_attendance', 'unique(name, channel_id, date)',
@@ -222,6 +238,15 @@ class MailingMailing(models.Model):
     )
 
     course_id = fields.Many2one('slide.channel', string='Course')
+    training_duration = fields.Float(string='Training Duration')
+    training_start_time = fields.Datetime(string='Training Start Time')
+    training_end_time = fields.Datetime(string='Training End Time')
+
+    @api.onchange('training_start_time', 'training_duration')
+    def _onchange_compute_end_time(self):
+        """Auto-calculate end time based on start time and duration"""
+        if self.training_start_time and self.training_duration:
+            self.training_end_time = self.training_start_time + timedelta(hours=self.training_duration)
 
     def write(self, vals):
         """Override write to sync attendees with slide.channel.partner immediately."""
@@ -351,6 +376,72 @@ class MailingMailing(models.Model):
         # Option 2: Get the most popular/active course
         active_course = self.env['slide.channel'].search([], limit=1, order='total_views desc')
         return active_course.id if active_course else False
+
+
+class AttendanceProof(models.Model):
+    _name = 'attendance.proof'
+    _description = 'Attendance Proof Upload'
+
+    partner_id = fields.Many2one('res.partner', string='Attendee', required=True)
+    partner_name = fields.Char(related='partner_id.name', string='Name', readonly=True)
+    course_id = fields.Many2one('slide.channel', string='Course', required=True)
+
+    proof_image = fields.Binary(string='Proof of Attendance', required=True, attachment=True)
+    proof_filename = fields.Char(string='Filename')
+    upload_date = fields.Datetime(string='Upload Date', default=fields.Datetime.now, readonly=True)
+    notes = fields.Text(string='Notes')
+    status = fields.Selection([
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
+    ], string='Status', default='pending')
+
+class TrainingCalendar(models.Model):
+    _name = 'training.calendar'
+    _description = 'Training Schedule Calendar'
+    _order = 'training_date desc'
+
+    course_id = fields.Many2one('slide.channel', string='Course', required=True, ondelete='cascade')
+    training_date = fields.Date(string='Training Date', required=True)
+    start_time = fields.Float(string='Start Time', help='Start time in hours (e.g., 9.5 for 9:30 AM)')
+    end_time = fields.Float(string='End Time', help='End time in hours (e.g., 17.5 for 5:30 PM)')
+    duration = fields.Float(string='Duration (Hours)', compute='_compute_duration', store=True)
+    description = fields.Text(string='Description')
+    location = fields.Char(string='Location')
+
+    # New field for number of participants
+    participant_count = fields.Integer(
+        string='No. of Participants',
+        compute='_compute_participant_count',
+        store=True
+    )
+
+    _sql_constraints = [
+        ('unique_training_date', 'unique(course_id, training_date)',
+         'Training date already exists for this course!'),
+    ]
+
+    @api.depends('start_time', 'end_time')
+    def _compute_duration(self):
+        for record in self:
+            if record.start_time and record.end_time:
+                # Handle cases where end_time < start_time (e.g., overnight sessions)
+                if record.end_time >= record.start_time:
+                    record.duration = record.end_time - record.start_time
+                else:
+                    # Add 24 hours to end_time if it's the next day
+                    record.duration = (24 - record.start_time) + record.end_time
+            else:
+                record.duration = 0.0
+
+    @api.depends('course_id.channel_partner_ids')
+    def _compute_participant_count(self):
+        """Compute the number of participants enrolled in the course"""
+        for record in self:
+            if record.course_id:
+                record.participant_count = len(record.course_id.channel_partner_ids)
+            else:
+                record.participant_count = 0
 
 
 

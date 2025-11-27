@@ -1,12 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="slide_channel_form_inherit" model="ir.ui.view">
-        <field name="name">slide.channel.form.inherit</field>
+    <!-- Rename Karma tab to Review -->
+    <record id="slide_channel_karma_rename" model="ir.ui.view">
+        <field name="name">slide.channel.karma.rename</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='karma_rules']" position="attributes">
+                <attribute name="string">Review</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Attendance Proof Form View -->
+    <record id="view_attendance_proof_form" model="ir.ui.view">
+        <field name="name">attendance.proof.form</field>
+        <field name="model">attendance.proof</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="course_id" options="{'no_create': True}"/>
+                            <field name="upload_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="proof_image" widget="image" options="{'size': [400, 400]}"/>
+                            <field name="proof_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Add notes about attendance proof..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Training Calendar Form View -->
+    <record id="view_training_calendar_form" model="ir.ui.view">
+        <field name="name">training.calendar.form</field>
+        <field name="model">training.calendar</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="course_id" options="{'no_create': True}"/>
+                            <field name="training_date"/>
+                            <field name="location"/>
+                        </group>
+                        <group>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Add training session details..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Add Participants and Training Calendar Pages -->
+   <record id="slide_channel_form_inherit_pages" model="ir.ui.view">
+        <field name="name">slide.channel.form.inherit.pages</field>
         <field name="model">slide.channel</field>
         <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[last()]" position="after">
-                <page string="Attendance">
+                <page string="Participants">
                     <field name="attendance_ids" context="{'default_channel_id': id}">
                         <list editable="bottom">
                             <field name="partner_name" string="Employee Name"/>
@@ -15,10 +83,47 @@
                         </list>
                     </field>
                 </page>
+                <page string="Proof of Attendance" name="proof_attendance">
+                    <field name="proof_ids">
+                        <list>
+                            <field name="partner_name"/>
+                            <field name="proof_filename"/>
+                            <field name="upload_date"/>
+                        </list>
+                        <form>
+                            <sheet>
+                                <group>
+                                    <group>
+                                        <field name="partner_id" options="{'no_create': True}"/>
+                                        <field name="course_id" invisible="1"/>
+                                        <field name="upload_date" readonly="1"/>
+                                        <field name="proof_image" widget="image" options="{'size': [400, 400]}"/>
+                                        <field name="proof_filename" invisible="1"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <field name="notes" placeholder="Add notes about attendance proof..."/>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                </page>
+                <page string="Training Calendar" name="training_calendar">
+                    <field name="training_calendar_ids" context="{'default_course_id': id}">
+                        <list editable="bottom">
+                            <field name="training_date"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="participant_count" readonly="1"/>
+                        </list>
+                    </field>
+                </page>
             </xpath>
         </field>
     </record>
 
+    <!-- Slide Attendance Form -->
     <record id="slide_attendance_form" model="ir.ui.view">
         <field name="name">slide.attendance.form</field>
         <field name="model">slide.attendance</field>
