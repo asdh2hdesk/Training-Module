@@ -25,20 +25,32 @@ class AttendanceProofController(http.Controller):
         if not is_member:
             return request.redirect(f'/slides/{channel_id}')
 
+        # Get all training schedules for this course
+        training_schedules = request.env['training.calendar'].search([
+            ('course_id', '=', channel_id)
+        ], order='training_date desc')
+
         # Get all uploaded proofs for this user and course
         existing_proofs = request.env['attendance.proof'].search([
             ('partner_id', '=', partner.id),
             ('course_id', '=', channel_id)
         ], order='upload_date desc')
 
-        # Get success message from session
+        # Get training dates that already have proofs
+        uploaded_training_dates = existing_proofs.mapped('training_date')
+
+        # Get success and error messages from session
         success_message = request.session.pop('proof_upload_success', False)
+        error_message = request.session.pop('proof_upload_error', False)
 
         # Prepare render values with main object for website editor
         values = {
             'channel': channel,
+            'training_schedules': training_schedules,
             'existing_proofs': existing_proofs,
+            'uploaded_training_dates': uploaded_training_dates,
             'success_message': success_message,
+            'error_message': error_message,
             'main_object': channel,  # For website editor
             'editable': True,
         }
@@ -47,9 +59,60 @@ class AttendanceProofController(http.Controller):
 
     @http.route('/slides/course/<int:channel_id>/submit-proof', type='http', auth='user', methods=['POST'],
                 website=True, csrf=True)
-    def submit_proof(self, channel_id, proof_file=None, notes=None, **kwargs):
+    def submit_proof(self, channel_id, training_date=None, proof_file=None, notes=None, **kwargs):
         """Handle proof submission - supports multiple files"""
+        from datetime import datetime
+
         partner = request.env.user.partner_id
+
+        # Validate training date is provided
+        if not training_date:
+            request.session['proof_upload_error'] = 'Please select a training schedule.'
+            return request.redirect(f'/slides/course/{channel_id}/upload-proof')
+
+        # Verify training schedule exists
+        training_schedule = request.env['training.calendar'].search([
+            ('course_id', '=', channel_id),
+            ('training_date', '=', training_date)
+        ], limit=1)
+
+        if not training_schedule:
+            request.session['proof_upload_error'] = 'Invalid training schedule selected.'
+            return request.redirect(f'/slides/course/{channel_id}/upload-proof')
+
+        # Check if training has already started
+        current_datetime = datetime.now()
+        training_datetime = datetime.combine(training_schedule.training_date, datetime.min.time())
+
+        if training_schedule.start_time:
+            hours = int(training_schedule.start_time)
+            minutes = int((training_schedule.start_time % 1) * 60)
+            training_datetime = training_datetime.replace(hour=hours, minute=minutes)
+
+        if training_datetime > current_datetime:
+            request.session['proof_upload_error'] = 'Cannot upload proof before the training session starts.'
+            return request.redirect(f'/slides/course/{channel_id}/upload-proof')
+
+        # Check if proof already exists for this training date
+        existing_proof = request.env['attendance.proof'].search([
+            ('partner_id', '=', partner.id),
+            ('course_id', '=', channel_id),
+            ('training_date', '=', training_date)
+        ], limit=1)
+
+        if existing_proof:
+            request.session['proof_upload_error'] = 'You have already uploaded proof for this training schedule.'
+            return request.redirect(f'/slides/course/{channel_id}/upload-proof')
+
+        # Verify training schedule exists
+        training_schedule = request.env['training.calendar'].search([
+            ('course_id', '=', channel_id),
+            ('training_date', '=', training_date)
+        ], limit=1)
+
+        if not training_schedule:
+            request.session['proof_upload_error'] = 'Invalid training schedule selected.'
+            return request.redirect(f'/slides/course/{channel_id}/upload-proof')
 
         # Handle multiple file uploads
         files = request.httprequest.files.getlist('proof_file')
@@ -61,6 +124,7 @@ class AttendanceProofController(http.Controller):
                         vals = {
                             'partner_id': partner.id,
                             'course_id': channel_id,
+                            'training_date': training_date,
                             'proof_image': base64.b64encode(proof_file.read()),
                             'proof_filename': proof_file.filename,
                             'notes': notes or '',
@@ -82,6 +146,9 @@ class AttendanceProofController(http.Controller):
                     'line': '0',
                     'func': 'submit_proof'
                 })
+                request.session['proof_upload_error'] = 'An error occurred while uploading. Please try again.'
+        else:
+            request.session['proof_upload_error'] = 'Please select at least one file to upload.'
 
         return request.redirect(f'/slides/course/{channel_id}/upload-proof')
 
@@ -155,24 +222,20 @@ class AttendanceProofController(http.Controller):
             proof_exists = request.env['attendance.proof'].search_count([
                 ('partner_id', '=', current_partner.id),
                 ('course_id', '=', channel_id),
-                ('upload_date', '>=', training.training_date),
-                ('upload_date', '<', training.training_date + timedelta(days=1))
-            ]) > 0
-
-            # Check if attendance is marked
-            attendance_marked = request.env['slide.attendance'].search_count([
-                ('name.partner_id', '=', current_partner.id),
-                ('channel_id', '=', channel_id),
-                ('date', '=', training.training_date),
-                ('present', '=', True)
+                ('training_date', '=', training.training_date)
             ]) > 0
 
             # Determine status color
-            # Yellow: Training scheduled (future or no action taken)
-            # Green: Training done and proof attached
-            # Red: Past training, no proof attached
 
-            if training.training_date > today:
+            current_datetime = datetime.now()
+            training_datetime = datetime.combine(training.training_date, datetime.min.time())
+
+            # Add training start time if available
+            if training.start_time:
+                hours = int(training.start_time)
+                minutes = int((training.start_time % 1) * 60)
+                training_datetime = training_datetime.replace(hour=hours, minute=minutes)
+            if training_datetime > current_datetime:
                 status_color = 'warning'  # Yellow - upcoming/scheduled
             elif proof_exists:
                 status_color = 'success'  # Green - proof attached
@@ -183,7 +246,6 @@ class AttendanceProofController(http.Controller):
                 'training': training,
                 'status_color': status_color,
                 'proof_exists': proof_exists,
-                'attendance_marked': attendance_marked
             }
 
         # Build calendar weeks

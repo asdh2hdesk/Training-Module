@@ -41,7 +41,10 @@ class ELearningDashboard extends Component {
 
         onMounted(() => {
             this._interval = setInterval(() => this.fetchKPIs(), 60000);
-            this.renderCharts();
+            // Wait for Chart.js to load before rendering charts
+            this.waitForChartJS().then(() => {
+                this.renderCharts();
+            });
             this.updateClock();
             this._clockInterval = setInterval(() => this.updateClock(), 1000);
         });
@@ -54,6 +57,30 @@ class ELearningDashboard extends Component {
             if (this.attendanceChartInstance) this.attendanceChartInstance.destroy();
             if (this.completionRatesChartInstance) this.completionRatesChartInstance.destroy();
             if (this.progressPieChartInstance) this.progressPieChartInstance.destroy();
+        });
+    }
+
+    // NEW METHOD: Wait for Chart.js to load
+    waitForChartJS() {
+        return new Promise((resolve) => {
+            if (typeof Chart !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max wait
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (typeof Chart !== 'undefined') {
+                    clearInterval(checkInterval);
+                    resolve();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    console.error('Chart.js failed to load after 5 seconds');
+                    resolve(); // Resolve anyway to prevent hanging
+                }
+            }, 100);
         });
     }
 
@@ -87,6 +114,7 @@ class ELearningDashboard extends Component {
             this.state.kpis = Object.assign(this.state.kpis, result.kpis || {});
             this.state.chartData = result.chartData || {};
 
+            await this.waitForChartJS();
             setTimeout(() => {
                 this.renderCharts();
             }, 100);
@@ -108,6 +136,12 @@ class ELearningDashboard extends Component {
     }
 
     renderCharts = () => {
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded. Charts cannot be rendered.');
+            return;
+        }
+
         setTimeout(() => {
             this.renderCourseProgressChart();
             this.renderEnrollmentsChart();
@@ -117,151 +151,9 @@ class ELearningDashboard extends Component {
         }, 100);
     }
 
-    renderCourseRatingsChart = () => {
-        const canvas = document.getElementById('courseRatingsChart');
-        if (!canvas || !window.Chart || !this.state.chartData.CourseRatings) return;
-
-        const ctx = canvas.getContext('2d');
-        const data = this.state.chartData.CourseRatings;
-
-        if (this.courseRatingsChartInstance) {
-            this.courseRatingsChartInstance.destroy();
-        }
-
-        this.courseRatingsChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(item => item.course),
-                datasets: [{
-                    label: 'Average Rating',
-                    data: data.map(item => item.avgRating),
-                    backgroundColor: '#3498db',
-                    borderColor: '#2980b9',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Course Ratings',
-                        font: { size: 16, weight: 'bold' },
-                        color: '#2c3e50',
-                        padding: 20
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const item = data[context.dataIndex];
-                                return [
-                                    `⭐ Avg Rating: ${item.avgRating}`,
-                                    `📝 Reviews: ${item.totalReviews}`,
-                                ];
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 5,
-                        ticks: {
-                            stepSize: 1,
-                            callback: function(value) { return value + '★'; }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-
-//    renderCoursesCategoryChart = () => {
-//        const canvas = document.getElementById('coursesCategoryChart');
-//        if (!canvas || !window.Chart || !this.state.chartData.coursesByCategory) return;
-//
-//        const ctx = canvas.getContext('2d');
-//        const data = this.state.chartData.coursesByCategory;
-//
-//        if (this.coursesCategoryChartInstance) {
-//            this.coursesCategoryChartInstance.destroy();
-//        }
-//
-//        const colors = this.generateColors(data.length);
-//
-//        this.coursesCategoryChartInstance = new Chart(ctx, {
-//            type: 'bar',
-//            data: {
-//                labels: data.map(item => item.category),
-//                datasets: [{
-//                    label: 'Courses',
-//                    data: data.map(item => item.count),
-//                    backgroundColor: colors.background,
-//                    borderColor: colors.border,
-//                    borderWidth: 2,
-//                    borderRadius: 6,
-//                    borderSkipped: false,
-//                }]
-//            },
-//            options: {
-//                responsive: true,
-//                maintainAspectRatio: false,
-//                plugins: {
-//                    title: {
-//                        display: true,
-//                        text: 'Courses by Category',
-//                        font: { size: 16, weight: 'bold' },
-//                        color: '#2c3e50',
-//                        padding: 20
-//                    },
-//                    legend: { display: false },
-//                    tooltip: {
-//                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
-//                        titleColor: '#fff',
-//                        bodyColor: '#fff',
-//                        borderColor: '#34495e',
-//                        borderWidth: 1,
-//                        cornerRadius: 8
-//                    }
-//                },
-//                scales: {
-//                    y: {
-//                        beginAtZero: true,
-//                        ticks: {
-//                            stepSize: 1,
-//                            color: '#7f8c8d',
-//                            font: { size: 11 }
-//                        },
-//                        grid: {
-//                            color: 'rgba(127, 140, 141, 0.2)',
-//                            drawBorder: false
-//                        }
-//                    },
-//                    x: {
-//                        ticks: {
-//                            color: '#7f8c8d',
-//                            maxRotation: 45,
-//                            minRotation: 45,
-//                            font: { size: 10 }
-//                        },
-//                        grid: { display: false }
-//                    }
-//                },
-//                animation: {
-//                    duration: 1000,
-//                    easing: 'easeOutQuart'
-//                }
-//            }
-//        });
-//    }
-
     renderCourseProgressChart = () => {
         const canvas = document.getElementById('CourseProgressChart');
-        if (!canvas || !this.state.chartData.CourseProgressChart) return;
+        if (!canvas || typeof Chart === 'undefined' || !this.state.chartData.CourseProgressChart) return;
 
         const ctx = canvas.getContext('2d');
         const data = this.state.chartData.CourseProgressChart;
@@ -314,10 +206,9 @@ class ELearningDashboard extends Component {
         });
     }
 
-
     renderEnrollmentsChart = () => {
         const canvas = document.getElementById('enrollmentsChart');
-        if (!canvas || !window.Chart || !this.state.chartData.enrollmentsByMonth) return;
+        if (!canvas || typeof Chart === 'undefined' || !this.state.chartData.enrollmentsByMonth) return;
 
         const ctx = canvas.getContext('2d');
         const data = this.state.chartData.enrollmentsByMonth;
@@ -402,7 +293,7 @@ class ELearningDashboard extends Component {
 
     renderAttendanceChart = () => {
         const canvas = document.getElementById('attendanceChart');
-        if (!canvas || !window.Chart || !this.state.chartData.attendanceByMonth) return;
+        if (!canvas || typeof Chart === 'undefined' || !this.state.chartData.attendanceByMonth) return;
 
         const ctx = canvas.getContext('2d');
         const data = this.state.chartData.attendanceByMonth;
@@ -498,7 +389,7 @@ class ELearningDashboard extends Component {
 
     renderCompletionRatesChart = () => {
         const canvas = document.getElementById('completionRatesChart');
-        if (!canvas || !window.Chart || !this.state.chartData.completionRates) return;
+        if (!canvas || typeof Chart === 'undefined' || !this.state.chartData.completionRates) return;
 
         const ctx = canvas.getContext('2d');
         const data = this.state.chartData.completionRates;
@@ -589,7 +480,7 @@ class ELearningDashboard extends Component {
 
     renderProgressPieChart = () => {
         const canvas = document.getElementById('progressPieChart');
-        if (!canvas || !window.Chart || !this.state.chartData.studentProgress) return;
+        if (!canvas || typeof Chart === 'undefined' || !this.state.chartData.studentProgress) return;
 
         const ctx = canvas.getContext('2d');
         const data = this.state.chartData.studentProgress;

@@ -27,9 +27,9 @@
     <template id="attendance_proof_upload_page" name="Upload Attendance Proof">
         <t t-call="website.layout">
             <div id="wrap" class="oe_structure">
-                <div class="container mt-5 mb-5">
+                <div class="container mt-3 mb-3">
                     <div class="row">
-                        <div class="col-lg-10 offset-lg-1">
+                        <div class="col-10 offset-1">
                             <div class="card">
                                 <div class="card-header bg-primary text-white">
                                     <h3 class="mb-0">
@@ -48,6 +48,15 @@
                                         </div>
                                     </t>
 
+                                    <!-- Error Message -->
+                                    <t t-if="error_message">
+                                        <div class="alert alert-danger alert-dismissible fade show">
+                                            <i class="fa fa-exclamation-triangle me-2"/>
+                                            <t t-esc="error_message"/>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                                        </div>
+                                    </t>
+
                                     <!-- Upload Form -->
                                     <form method="post"
                                           t-attf-action="/slides/course/#{channel.id}/submit-proof"
@@ -55,36 +64,66 @@
                                           class="mt-4 mb-4">
                                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
+                                        <!-- Training Schedule Selection -->
                                         <div class="mb-4">
+                                            <label for="training_date" class="form-label">
+                                                <strong>Select Training Schedule *</strong>
+                                            </label>
+                                            <select class="form-select"
+                                                    id="training_date"
+                                                    name="training_date"
+                                                    required="required">
+                                                <option value="">-- Select Training Date --</option>
+                                                <t t-foreach="training_schedules" t-as="schedule">
+                                                    <!-- Check if proof already uploaded for this date -->
+                                                    <t t-set="already_uploaded" t-value="schedule.training_date in uploaded_training_dates"/>
+                                                    <option t-att-value="schedule.training_date"
+                                                            t-att-disabled="'disabled' if already_uploaded else None"
+                                                            t-attf-class="#{already_uploaded and 'text-muted' or ''}">
+                                                        <t t-esc="schedule.training_date.strftime('%B %d, %Y')"/>
+                                                        <t t-if="schedule.start_time">
+                                                            - <t t-if="schedule.start_time" t-esc="'%02d:%02d' % (int(schedule.start_time), int((schedule.start_time % 1) * 60))"/>
+                                                        </t>
+                                                        <t t-if="schedule.location">
+                                                            (<t t-esc="schedule.location"/>)
+                                                        </t>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <!-- File Upload -->
+                                        <div class="mb-3">
                                             <label for="proof_file" class="form-label">
                                                 <strong>Upload Images/Screenshots *</strong>
                                             </label>
                                             <input type="file"
-                                                   class="form-control form-control-lg"
+                                                   class="form-control"
                                                    id="proof_file"
                                                    name="proof_file"
                                                    accept="image/*"
                                                    multiple="multiple"
                                                    required="required"/>
-<!--                                            <small class="form-text text-muted">-->
-<!--                                                You can select multiple files. Accepted formats: JPG, PNG, GIF (Max 5MB each)-->
-<!--                                            </small>-->
+                                            <small class="form-text text-muted">
+                                                You can select multiple files. Accepted formats: JPG, PNG, GIF
+                                            </small>
                                         </div>
 
-                                        <div class="mb-4">
+                                        <!-- Notes -->
+                                        <div class="mb-3">
                                             <label for="notes" class="form-label">Notes (Optional)</label>
                                             <textarea class="form-control"
                                                       id="notes"
                                                       name="notes"
-                                                      rows="3"
+                                                      rows="2"
                                                       placeholder="Add any additional notes about your attendance..."></textarea>
                                         </div>
 
                                         <div class="d-grid gap-2 d-md-block">
-                                            <button type="submit" class="btn btn-primary btn-sm">
+                                            <button type="submit" class="btn btn-primary">
                                                 <i class="fa fa-check me-2"/> Upload Proof
                                             </button>
-                                            <a t-attf-href="/slides/#{channel.id}" class="btn btn-secondary btn-sm ms-md-2">
+                                            <a t-attf-href="/slides/#{channel.id}" class="btn btn-secondary ms-md-2">
                                                 <i class="fa fa-arrow-left me-2"/> Back to Course
                                             </a>
                                         </div>
@@ -92,8 +131,8 @@
 
                                     <!-- Uploaded Proofs Table -->
                                     <t t-if="existing_proofs">
-                                        <hr class="my-4"/>
-                                        <h4 class="mb-3">
+                                        <hr class="my-2"/>
+                                        <h4 class="mb-2">
                                             <i class="fa fa-list me-2"/> Your Uploaded Proofs
                                         </h4>
 
@@ -102,7 +141,8 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th style="width: 5%">#</th>
-                                                        <th style="width: 20%">Preview</th>
+                                                        <th style="width: 15%">Training Date</th>
+                                                        <th style="width: 15%">Preview</th>
                                                         <th style="width: 20%">Filename</th>
                                                         <th style="width: 20%">Upload Date</th>
                                                         <th style="width: 15%">Actions</th>
@@ -116,12 +156,17 @@
                                                                 <t t-esc="counter"/>
                                                                 <t t-set="counter" t-value="counter + 1"/>
                                                             </td>
+                                                            <td>
+                                                                <strong>
+                                                                    <t t-esc="proof.training_date.strftime('%b %d, %Y') if proof.training_date else 'N/A'"/>
+                                                                </strong>
+                                                            </td>
                                                             <td class="text-center">
                                                                 <t t-if="proof.proof_image">
                                                                     <img t-attf-src="data:image/png;base64,#{proof.proof_image}"
                                                                          alt="Proof"
                                                                          class="img-thumbnail"
-                                                                         style="max-width: 100px; max-height: 100px; cursor: pointer;"
+                                                                         style="max-width: 80px; max-height: 80px; cursor: pointer;"
                                                                          data-bs-toggle="modal"
                                                                          t-attf-data-bs-target="#imageModal#{proof.id}"/>
                                                                 </t>
@@ -151,11 +196,15 @@
 
                                                         <!-- Image Preview Modal -->
                                                         <div class="modal fade" t-attf-id="imageModal#{proof.id}" tabindex="-1">
-                                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                            <div class="modal-dialog modal modal-dialog-centered">
                                                                 <div class="modal-content">
                                                                     <div class="modal-header">
                                                                         <h5 class="modal-title">
                                                                             <t t-esc="proof.proof_filename"/>
+                                                                            <br/>
+                                                                            <small class="text-muted">
+                                                                                Training Date: <t t-esc="proof.training_date.strftime('%B %d, %Y') if proof.training_date else 'N/A'"/>
+                                                                            </small>
                                                                         </h5>
                                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"/>
                                                                     </div>
@@ -190,9 +239,9 @@
     <template id="training_calendar_page" name="Training Calendar">
         <t t-call="website.layout">
             <div id="wrap" class="oe_structure">
-                <div class="container mt-5 mb-5">
+                <div class="container mt-3 mb-3">
                     <div class="row">
-                        <div class="col-lg-10 offset-lg-1">
+                        <div class="col-10 offset-1">
                             <div class="card">
                                 <div class="card-header bg-primary text-white">
                                     <h3 class="mb-0">
@@ -253,9 +302,9 @@
                                                         <tr>
                                                             <t t-foreach="week" t-as="day">
                                                                 <td t-attf-class="p-3
-                                                                    #{day.get('has_training') and day.get('status_color') == 'warning' and 'bg-warning' or ''}
-                                                                    #{day.get('has_training') and day.get('status_color') == 'success' and 'bg-success text-white' or ''}
-                                                                    #{day.get('has_training') and day.get('status_color') == 'danger' and 'bg-danger text-white' or ''}
+                                                                    #{day.get('has_training') and day.get('status_color') == 'warning' and 'bg-warning bg-opacity-25' or ''}
+                                                                    #{day.get('has_training') and day.get('status_color') == 'success' and 'bg-success bg-opacity-25' or ''}
+                                                                    #{day.get('has_training') and day.get('status_color') == 'danger' and 'bg-danger bg-opacity-25' or ''}
                                                                     #{day.get('is_today') and 'border-primary border-3' or ''}">
                                                                     <div>
                                                                         <strong t-esc="day.get('day', '')"/>

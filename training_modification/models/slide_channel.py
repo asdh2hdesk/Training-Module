@@ -385,6 +385,13 @@ class AttendanceProof(models.Model):
     partner_id = fields.Many2one('res.partner', string='Attendee', required=True)
     partner_name = fields.Char(related='partner_id.name', string='Name', readonly=True)
     course_id = fields.Many2one('slide.channel', string='Course', required=True)
+    training_date = fields.Date(string='Training Date', required=True, index=True)
+    training_schedule_id = fields.Many2one(
+        'training.calendar',
+        string='Training Schedule',
+        compute='_compute_training_schedule',
+        store=True
+    )
 
     proof_image = fields.Binary(string='Proof of Attendance', required=True, attachment=True)
     proof_filename = fields.Char(string='Filename')
@@ -395,6 +402,24 @@ class AttendanceProof(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected')
     ], string='Status', default='pending')
+
+    _sql_constraints = [
+        ('unique_training_proof', 'unique(partner_id, course_id, training_date)',
+         'You have already uploaded proof for this training date!'),
+    ]
+
+    @api.depends('course_id', 'training_date')
+    def _compute_training_schedule(self):
+        """Link to the corresponding training schedule"""
+        for record in self:
+            if record.course_id and record.training_date:
+                training = self.env['training.calendar'].search([
+                    ('course_id', '=', record.course_id.id),
+                    ('training_date', '=', record.training_date)
+                ], limit=1)
+                record.training_schedule_id = training.id if training else False
+            else:
+                record.training_schedule_id = False
 
 class TrainingCalendar(models.Model):
     _name = 'training.calendar'
